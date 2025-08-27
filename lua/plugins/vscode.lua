@@ -1,0 +1,22 @@
+-- return {
+--   {
+--     "vscode-neovim/vscode-neovim",
+--     keys = function()
+--       if not vim.g.vscode then
+--         return {}
+--       end
+--
+--       local vscode = require("vscode")
+--       return {
+--         {
+--           "<leader>n",
+--           vscode.action("workbench.action.moveEditorToNewWindow"),
+--           mode = "n",
+--           desc = "Open tab in new window",
+--         },
+--       }
+--     end,
+--   },
+-- }
+--
+return {}
