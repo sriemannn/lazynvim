@@ -71,40 +71,156 @@ return {
   },
   {
     "nvim-treesitter/nvim-treesitter",
-    opts = function(_, opts)
-      vim.list_extend(opts.textobjects.move.goto_next_start, {
-        ["]m"] = { query = "@code_cell.inner", desc = "next code block" },
-      })
-
-      vim.list_extend(opts.textobjects.move.goto_previous_start, {
-        ["[m"] = { query = "@code_cell.inner", desc = "previous code block" },
-      })
-
-      table.insert(opts.textobjects, {
+    version = false, -- last release is way too old and doesn't work on Windows
+    build = ":TSUpdate",
+    event = { "LazyFile", "VeryLazy" },
+    lazy = vim.fn.argc(-1) == 0, -- load treesitter early when opening a file from the cmdline
+    init = function(plugin)
+      -- PERF: add nvim-treesitter queries to the rtp and it's custom query predicates early
+      -- This is needed because a bunch of plugins no longer `require("nvim-treesitter")`, which
+      -- no longer trigger the **nvim-treesitter** module to be loaded in time.
+      -- Luckily, the only things that those plugins need are the custom queries, which we make available
+      -- during startup.
+      require("lazy.core.loader").add_to_rtp(plugin)
+      require("nvim-treesitter.query_predicates")
+    end,
+    cmd = { "TSUpdateSync", "TSUpdate", "TSInstall" },
+    keys = {
+      { "<c-space>", desc = "Increment Selection" },
+      { "<bs>", desc = "Decrement Selection", mode = "x" },
+    },
+    opts_extend = { "ensure_installed" },
+    ---@type TSConfig
+    ---@diagnostic disable-next-line: missing-fields
+    opts = {
+      highlight = { enable = true },
+      indent = { enable = true },
+      ensure_installed = {
+        "bash",
+        "c",
+        "diff",
+        "html",
+        "javascript",
+        "jsdoc",
+        "json",
+        "jsonc",
+        "lua",
+        "luadoc",
+        "luap",
+        "markdown",
+        "markdown_inline",
+        "printf",
+        "python",
+        "query",
+        "regex",
+        "toml",
+        "tsx",
+        "typescript",
+        "vim",
+        "vimdoc",
+        "xml",
+        "yaml",
+      },
+      incremental_selection = {
+        enable = true,
+        keymaps = {
+          init_selection = "<C-space>",
+          node_incremental = "<C-space>",
+          scope_incremental = false,
+          node_decremental = "<bs>",
+        },
+      },
+      textobjects = {
+        move = {
+          enable = true,
+          goto_next_start = {
+            ["]f"] = "@function.outer",
+            ["]c"] = "@class.outer",
+            ["]a"] = "@parameter.inner",
+            ["]b"] = "@code_cell.inner",
+          },
+          goto_next_end = {
+            ["]F"] = "@function.outer",
+            ["]C"] = "@class.outer",
+            ["]A"] = "@parameter.inner",
+          },
+          goto_previous_start = {
+            ["[f"] = "@function.outer",
+            ["[c"] = "@class.outer",
+            ["[a"] = "@parameter.inner",
+            ["[b"] = "@code_cell.inner",
+          },
+          goto_previous_end = { ["[F"] = "@function.outer", ["[C"] = "@class.outer", ["[A"] = "@parameter.inner" },
+        },
         select = {
           enable = true,
-          lookahead = true,
+          lookahead = true, -- you can change this if you want
           keymaps = {
             --- ... other keymaps
-            ["im"] = { query = "@code_cell.inner", desc = "in code block" },
-            ["am"] = { query = "@code_cell.outer", desc = "around code block" },
+            ["ib"] = { query = "@code_cell.inner", desc = "in block" },
+            ["ab"] = { query = "@code_cell.outer", desc = "around block" },
           },
         },
-      })
-
-      table.insert(opts.textobjects, {
-        swap = {
+        swap = { -- Swap only works with code blocks that are under the same
+          -- markdown header
           enable = true,
           swap_next = {
             --- ... other keymap
-            ["<leader>sml"] = "@code_cell.outer",
+            ["<leader>sbl"] = "@code_cell.outer",
           },
           swap_previous = {
             --- ... other keymap
-            ["<leader>smh"] = "@code_cell.outer",
+            ["<leader>sbh"] = "@code_cell.outer",
           },
         },
-      })
+      },
+    },
+    ---@param opts TSConfig
+    config = function(_, opts)
+      if type(opts.ensure_installed) == "table" then
+        opts.ensure_installed = LazyVim.dedup(opts.ensure_installed)
+      end
+      require("nvim-treesitter.configs").setup(opts)
     end,
   },
+  -- {
+  --   "nvim-treesitter/nvim-treesitter",
+  --   opts = function(_, opts)
+  --     vim.list_extend(opts.textobjects.move, { enable = true, set_jumps = false })
+  --
+  --     vim.list_extend(opts.textobjects.move.goto_next_start, {
+  --       ["]b"] = { query = "@code_cell.inner", desc = "next code block" },
+  --     })
+  --
+  --     vim.list_extend(opts.textobjects.move.goto_previous_start, {
+  --       ["[b"] = { query = "@code_cell.inner", desc = "previous code block" },
+  --     })
+  --
+  --     table.insert(opts.textobjects, {
+  --       select = {
+  --         enable = true,
+  --         lookahead = true,
+  --         keymaps = {
+  --           --- ... other keymaps
+  --           ["ib"] = { query = "@code_cell.inner", desc = "in code block" },
+  --           ["ab"] = { query = "@code_cell.outer", desc = "around code block" },
+  --         },
+  --       },
+  --     })
+  --
+  --     table.insert(opts.textobjects, {
+  --       swap = {
+  --         enable = true,
+  --         swap_next = {
+  --           --- ... other keymap
+  --           ["<leader>sbl"] = "@code_cell.outer",
+  --         },
+  --         swap_previous = {
+  --           --- ... other keymap
+  --           ["<leader>sbh"] = "@code_cell.outer",
+  --         },
+  --       },
+  --     })
+  --   end,
+  -- },
 }

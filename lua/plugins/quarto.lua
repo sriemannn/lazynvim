@@ -1,13 +1,4 @@
 return {
-  -- {
-  --   "GCBallesteros/jupytext.nvim",
-  --   -- ft = { "ipynb" },
-  --   opts = {
-  --     style = "markdown",
-  --     output_extension = "md",
-  --     force_ft = "markdown",
-  --   },
-  -- },
   { "jmbuhr/otter.nvim", ft = { "markdown", "quarto", "norg" } },
   {
     "quarto-dev/quarto-nvim",
@@ -93,8 +84,8 @@ return {
         mode = { "n" },
         body = "<localleader>j", -- this is the key that triggers the hydra
         heads = {
-          { "j", keys("]m"), { desc = "↓" } },
-          { "k", keys("[m"), { desc = "↑" } },
+          { "j", keys("]b"), { desc = "↓" } },
+          { "k", keys("[b"), { desc = "↑" } },
           { "r", ":QuartoSend<CR>", { desc = "run cell" } },
           { "l", ":QuartoSendLine<CR>", { desc = "run line" } },
           { "R", ":QuartoSendAbove<CR>", { desc = "run all above" } },
